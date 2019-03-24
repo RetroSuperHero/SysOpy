@@ -1,0 +1,69 @@
+CC = gcc
+SOURCE=main
+CFLAGS0=-Wall -O0
+CFLAGS3=-Wall -O3
+CFLAGSs=-Wall -Os
+SRCPATH=../zad02
+LIBPATH=../zad01
+LIBNAME=library
+OUTPUT=results3b.txt
+PARAMETERS=create_table 5 search_directory . main tmp1 search_directory ../zad01 main tmp2 remove_block 1 search_directory ../zad01 library.h tmp3 search_directory . aa tmp4
+
+shared_ver_0:
+	$(CC) -I$(LIBPATH) $(SRCPATH)/$(SOURCE).c -o $(SOURCE)_shared_ver -L$(LIBPATH) $(LIBPATH)/$(LIBNAME).c -Wl,-rpath,$(LIBPATH) $(CFLAGS0)
+	echo "\nOpcje kompilatora gcc: $(CFLAGS0), SHARED_LIB_0: \n" >> $(OUTPUT)
+	./$(SOURCE)_shared_ver $(PARAMETERS) >> $(OUTPUT)
+
+shared_ver_3:
+	$(CC) -I$(LIBPATH) $(SRCPATH)/$(SOURCE).c -o $(SOURCE)_shared_ver -L$(LIBPATH) $(LIBPATH)/$(LIBNAME).c -Wl,-rpath,$(LIBPATH) $(CFLAGS3)
+	echo "\nOpcje kompilatora gcc: $(CFLAGS3), SHARED_LIB_3: \n" >> $(OUTPUT)
+	./$(SOURCE)_shared_ver $(PARAMETERS) >> $(OUTPUT)
+
+shared_ver_s:
+	$(CC) -I$(LIBPATH) $(SRCPATH)/$(SOURCE).c -o $(SOURCE)_shared_ver -L$(LIBPATH) $(LIBPATH)/$(LIBNAME).c -Wl,-rpath,$(LIBPATH) $(CFLAGSs)
+	echo "\nOpcje kompilatora gcc: $(CFLAGSs), SHARED_LIB_S: \n" >> $(OUTPUT)
+	./$(SOURCE)_shared_ver $(PARAMETERS) >> $(OUTPUT)
+
+static_ver_0:
+	$(CC) -static -I$(LIBPATH) $(SRCPATH)/$(SOURCE).c -o $(SOURCE)_static_ver -L$(LIBPATH) $(LIBPATH)/$(LIBNAME).c $(CFLAGS0)
+	echo "\nOpcje kompilatora gcc: $(CFLAGS0), STATIC_LIB_0: \n" >> $(OUTPUT)
+	./$(SOURCE)_static_ver $(PARAMETERS) >> $(OUTPUT)
+
+static_ver_3:
+	$(CC) -static -I$(LIBPATH) $(SRCPATH)/$(SOURCE).c -o $(SOURCE)_static_ver -L$(LIBPATH) $(LIBPATH)/$(LIBNAME).c $(CFLAGS3)
+	echo "\nOpcje kompilatora gcc: $(CFLAGS3), STATIC_LIB_3: \n" >> $(OUTPUT)
+	./$(SOURCE)_static_ver $(PARAMETERS) >> $(OUTPUT)
+
+static_ver_3:
+	$(CC) -static -I$(LIBPATH) $(SRCPATH)/$(SOURCE).c -o $(SOURCE)_static_ver -L$(LIBPATH) $(LIBPATH)/$(LIBNAME).c $(CFLAGSs)
+	echo "\nOpcje kompilatora gcc: $(CFLAGSs), STATIC_LIB_S: \n" >> $(OUTPUT)
+	./$(SOURCE)_static_ver $(PARAMETERS) >> $(OUTPUT)
+
+dynamic_ver_0:
+	$(CC) -I$(LIBPATH) $(SRCPATH)/$(SOURCE).c -o dyn_$(SOURCE) -L$(LIBPATH) $(LIBPATH)/$(LIBNAME).c -ldl $(CFLAGS0)
+	echo "\nOpcje kompilatora gcc: $(CFLAGS0), DYNAMIC_LOADING_0: \n" >> $(OUTPUT)
+	./dyn_$(SOURCE) $(PARAMETERS) >> $(OUTPUT)
+
+dynamic_ver_3:
+	$(CC) -I$(LIBPATH) $(SRCPATH)/$(SOURCE).c -o dyn_$(SOURCE) -L$(LIBPATH) $(LIBPATH)/$(LIBNAME).c -ldl $(CFLAGS3)
+	echo "\nOpcje kompilatora gcc: $(CFLAGS3), DYNAMIC_LOADING_3: \n" >> $(OUTPUT)
+	./dyn_$(SOURCE) $(PARAMETERS) >> $(OUTPUT)
+
+dynamic_ver_s:
+	$(CC) -I$(LIBPATH) $(SRCPATH)/$(SOURCE).c -o dyn_$(SOURCE) -L$(LIBPATH) $(LIBPATH)/$(LIBNAME).c -ldl $(CFLAGSs)
+	echo "\nOpcje kompilatora gcc: $(CFLAGSs), DYNAMIC_LOADING_S: \n" >> $(OUTPUT)
+	./dyn_$(SOURCE) $(PARAMETERS) >> $(OUTPUT)
+
+all:
+	make dynamic_ver_0
+	make dynamic_ver_3
+	make dynamic_ver_s
+	make static_ver_0
+	make static_ver_3
+	make static_ver_s
+	make shared_ver_0
+	make shared_ver_3
+	make shared_ver_s
+
+clean:
+	rm -r $(SOURCE)_shared_ver $(SOURCE)_static_ver dyn_$(SOURCE) $(OUTPUT)
