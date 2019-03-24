@@ -51,7 +51,7 @@ char* stringCat(char* buffer, int args, ...) {
     return buffer;
 }
 
-void setMonitor(char* fileName, char* directory, int timeDelay, int maxTime) {
+void setMonitorLib(char* fileName, char* directory, int timeDelay, int maxTime) {
     pid_t child_pid = fork();
 
     if(child_pid == 0) {
@@ -109,7 +109,7 @@ void setMonitor(char* fileName, char* directory, int timeDelay, int maxTime) {
     }
 }
 
-void setMonitoor(char* fileName, char* directory, int timeDelay, int maxTime) {
+void setMonitorSys(char* fileName, char* directory, int timeDelay, int maxTime) {
     pid_t child_pid = fork();
 
     if(child_pid == 0) {
@@ -186,9 +186,9 @@ int main(int argc, char* argv[]) {
                     line = strtok(NULL, " ");
 
                     if(mode == 0) {
-                        setMonitor(file, directory, timeDelay, maxTime);
+                        setMonitorLib(file, directory, timeDelay, maxTime);
                     } else {
-                        setMonitoor(file, directory, timeDelay, maxTime);
+                        setMonitorSys(file, directory, timeDelay, maxTime);
                     }
                     numberOfProcesses++;
                 }
