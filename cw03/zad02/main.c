@@ -35,7 +35,7 @@ char* getDateFromTimestamp(time_t timestamp, struct tm* ts) {
     char* date = calloc(80, sizeof(char));
 
     *ts = *localtime(&timestamp);
-    strftime(date, 80*sizeof(char), "_%Y-%m-%d_%H:%M:%S", ts);
+    strftime(date, 80*sizeof(char), "_%Y-%m-%d_%H-%M-%S", ts);
     return date;
 }
 
