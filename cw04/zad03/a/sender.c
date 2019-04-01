@@ -15,11 +15,27 @@ void receive(int signum) {
     noOfReceived++;
 }
 
-void sigqueueMode(int catcherPID, int noOfSignals) {
+void killMode(int catcherPID, int noOfSignals) {
     for(int i=0; i<noOfSignals; ++i) {
         kill(catcherPID, SIGUSR1);  
     }
     kill(catcherPID, SIGUSR2);
+}
+
+void sigqueueMode(int catcherPID, int noOfSignals) {
+    for(int i=0; i<noOfSignals; ++i) {
+        const union sigval value;
+        sigqueue(catcherPID, SIGUSR1, value);
+    }
+    const union sigval value;
+    sigqueue(catcherPID, SIGUSR2, value);
+}
+
+void sigrtMode(int catcherPID, int noOfSignals) {
+    for(int i=0; i<noOfSignals; ++i) {
+        kill(catcherPID, SIGRTMIN);
+    }
+    kill(catcherPID, SIGRTMAX);
 }
 
 int stringToInt(char* string) {
@@ -43,7 +59,14 @@ int main(int argc, char* argv[]) {
         int mode = stringToInt(argv[3]);
 
         if(mode == 0) {
+            killMode(catcherPID, noOfSignals);
+        } else if(mode == 1) {
             sigqueueMode(catcherPID, noOfSignals);
+        } else if(mode == 2) {
+            sigrtMode(catcherPID, noOfSignals);
+        } else {
+            printf("Podano nieprawidłowy tryb\n");
+            exit(0);
         }
     }
 

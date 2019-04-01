@@ -5,26 +5,18 @@
 #include <signal.h>
 #include <sys/types.h>
 
-int receivedNo = 0;
-
 void ignore(int signum) {
     printf("Ignored\n");
 }
 
-void receive(int signum) {
-    receivedNo++;
+void terminate(int signum) {
+    exit(0);
 }
 
-void send(int sig, siginfo_t *info, void *context) {
+void receiveAndSend(int sig, siginfo_t *info, void *context) {
     int signalPid = info->si_pid;
 
-    for(int i=0; i<receivedNo; ++i) {
-        kill(signalPid, SIGUSR1);
-    }
-
-    printf("%d\n", signalPid);
-    kill(signalPid, SIGUSR2);
-    exit(0);
+    kill(signalPid, SIGUSR1);
 }
 
 int stringToInt(char* string) {
@@ -45,16 +37,14 @@ int main(int argc, char* argv[]) {
     act.sa_flags = 0; 
     sigaction(SIGINT, &act, NULL); 
 
-    signal(SIGUSR1, receive);
-
     struct sigaction sa;
     sa.sa_flags = SA_SIGINFO;
-    sa.sa_sigaction = send;
-    sigaction(SIGUSR2, &sa, NULL);
+    sa.sa_sigaction = receiveAndSend;
+    sigaction(SIGUSR1, &sa, NULL);
 
-    while(1) {
-        printf("%d %d\n", receivedNo, getpid());
-    }
+    signal(SIGUSR2, terminate);
+
+    while(1) { }
 
     return 0;
 }
