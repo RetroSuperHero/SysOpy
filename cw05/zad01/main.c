@@ -7,16 +7,24 @@
 
 int maxCommands = 10;
 
-char** getCommandElements(char *line){
-    int noOfArguments = 1;
-    char* lineCpy = calloc(1000, sizeof(char));
-    strcpy(lineCpy, line);
-    char tokens[3] = {' ','\n','\t'};
+int getNumberOfTokens(char* string, char* tokens) {
+    int noOfTokens = 1;
+    char* stringCpy = calloc(strlen(string), sizeof(char));
+    strcpy(stringCpy, string);
 
-    strtok(lineCpy, tokens);
+    strtok(stringCpy, tokens);
     while(strtok(NULL, tokens)) {
-        noOfArguments++;
+        noOfTokens++;
     }
+
+    free(stringCpy);
+
+    return noOfTokens;
+}
+
+char** getCommandElements(char *line){
+    char tokens[3] = {' ','\n','\t'};
+    int noOfArguments = getNumberOfTokens(line, tokens);
 
     char** arguments = calloc(noOfArguments+1, sizeof(char*));
     arguments[0] = strtok(line, tokens);
@@ -100,19 +108,13 @@ int main(int argc, char* argv[]) {
             fseek(lista, 0L, SEEK_SET);
 
             char* buff = calloc(size, sizeof(char));
-            char* original = calloc(size, sizeof(char));
 
             if(fread(buff, sizeof(char), size, lista)) {
-                strcpy(original, buff);
-                int noOfLines = 1;
-                strtok(buff, "\n");
-
-                while(strtok(NULL, "\n")) {
-                    noOfLines++;
-                }
+                char tokens[1] = {'\n'};
+                int noOfLines = getNumberOfTokens(buff, tokens);
 
                 char* lines[noOfLines];
-                char* first = strtok(original, "\n");
+                char* first = strtok(buff, "\n");
                 printf("\n");
 
                 for(int i=0; i<noOfLines; ++i) {
@@ -125,7 +127,6 @@ int main(int argc, char* argv[]) {
                 }
             }
             free(buff);
-            free(original);
         }
     }
 }
