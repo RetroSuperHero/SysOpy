@@ -33,6 +33,8 @@ char** getCommandElements(char *line){
         arguments[i] = strtok(NULL, tokens);
     }
 
+    arguments[noOfArguments] = NULL;
+
     return arguments;
 }
 
@@ -90,6 +92,8 @@ void execLine(char* line) {
     }
     close(pipes[commandsNumber % 2][0]);
     close(pipes[commandsNumber % 2][1]);
+    close(pipes[(commandsNumber + 1) % 2][0]);
+    close(pipes[(commandsNumber + 1) % 2][1]);
     for(int i=0; i<commandsNumber; ++i) {
         wait(NULL);
     }
