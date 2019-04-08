@@ -5,8 +5,6 @@
 #include <string.h>
 #include <wait.h>
 
-int maxCommands = 10;
-
 int getNumberOfTokens(char* string, char* tokens) {
     int noOfTokens = 1;
     char* stringCpy = calloc(strlen(string), sizeof(char));
