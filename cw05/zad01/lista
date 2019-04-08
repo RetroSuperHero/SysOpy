@@ -1,4 +1,4 @@
-ls -al | wc -c | cat 
+ls -al | wc -c | cat
 ls -a -l -f | cat
 ls -a -l | wc -l
 ls -al | head -n 2

@@ -39,23 +39,14 @@ char** getCommandElements(char *line){
 }
 
 void execLine(char* line) {
-    int commandsNumber = 1;
+    char tokens[1] = {'|'};
     int pipes[2][2];
-    char *commands[maxCommands];
+    int commandsNumber = getNumberOfTokens(line, tokens);
+    char **commands = calloc(commandsNumber, sizeof(char*));
 
-    char* lineCpy = calloc(strlen(line), sizeof(char));
-    strcpy(lineCpy, line);
-
-    strtok(lineCpy, "|");
-    while(strtok(NULL, "|")) {
-        commandsNumber++;
-    }
-
-    free(lineCpy);
-
-    commands[0] = strtok(line, "|");
+    commands[0] = strtok(line, tokens);
     for(int i=1; i<commandsNumber; ++i) {
-        commands[i] = strtok(NULL, "|");
+        commands[i] = strtok(NULL, tokens);
     }
 
     for (int i=0; i<commandsNumber; ++i) {
@@ -90,6 +81,7 @@ void execLine(char* line) {
             exit(0);
         }
     }
+    free(commands);
     close(pipes[commandsNumber % 2][0]);
     close(pipes[commandsNumber % 2][1]);
     close(pipes[(commandsNumber + 1) % 2][0]);
