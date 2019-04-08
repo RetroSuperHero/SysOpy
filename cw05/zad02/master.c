@@ -17,8 +17,8 @@ int main(int argc, char* argv[]) {
             int fifoFile = open(fifoPath, O_RDWR);
 
             while(1) {
-                char buff[80];
-                read(fifoFile, buff, 80);
+                char buff[100];
+                read(fifoFile, buff, 100);
                 printf("--%s\n", buff);
             }
 

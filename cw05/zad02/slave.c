@@ -50,10 +50,11 @@ int main(int argc, char* argv[]) {
             char pid[20];
             sprintf(pid, "%d", getpid());
 
-            char buffer[100];
+            char* buffer = calloc(120, sizeof(char));
             stringCat(buffer, 3, pid, " ", buff);
 
             write(fifoFile, buffer, strlen(buff));
+            free(buffer);
             sleep(rand()%3 + 2);
         }
 
