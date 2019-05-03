@@ -28,4 +28,31 @@ typedef struct Message {
     char text[MAX_MESSAGE_LENGTH];
 } Message;
 
+char* getTypeName(int typeNumber) {
+    switch (typeNumber) {
+        case 1:
+            return "ECHO";
+        case 2:
+            return "LIST";
+        case 3:
+            return "FRIENDS";
+        case 4:
+            return "ADD";
+        case 5:
+            return "DEL";
+        case 6:
+            return "2ALL";
+        case 7:
+            return "2FRIENDS";
+        case 8:
+            return "2ONE";
+        case 9:
+            return "STOP";
+        case 10:
+            return "INIT";
+        default:
+            return "ERROR";
+    }
+}
+
 #endif //CHAT_H

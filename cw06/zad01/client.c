@@ -29,33 +29,6 @@ Message receiveMessage(int queue) {
     }
 }
 
-char* getTypeName(int typeNumber) {
-    switch (typeNumber) {
-        case 1:
-            return "ECHO";
-        case 2:
-            return "LIST";
-        case 3:
-            return "FRIENDS";
-        case 4:
-            return "ADD";
-        case 5:
-            return "DEL";
-        case 6:
-            return "2ALL";
-        case 7:
-            return "2FRIENDS";
-        case 8:
-            return "2ONE";
-        case 9:
-            return "STOP";
-        case 10:
-            return "INIT";
-        default:
-            return "ERROR";
-    }
-}
-
 void sendMessageToClient(int queue, long messageType, char* messageText, long clientID, int textLength) {
     Message message;
     message.type = messageType;
