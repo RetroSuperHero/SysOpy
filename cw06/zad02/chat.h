@@ -7,6 +7,8 @@
 #define MAX_MESSAGE_LENGTH 100
 #define MAX_CLIENTS 10
 #define MAX_FILE_SIZE 1000
+#define MAX_MESSAGES 10
+#define SERVER "/server"
 
 typedef struct Message {
     long type;

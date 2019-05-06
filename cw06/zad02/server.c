@@ -10,17 +10,18 @@
 #include <signal.h>
 #include <string.h>
 #include <time.h>
+#include <mqueue.h>
 #include "chat.h"
 
-int serverQueue;
+mqd_t serverQueue;
 int lastClientIndex = -1;
-int clientsQueues[MAX_CLIENTS];
+mqd_t clientsQueues[MAX_CLIENTS];
 int lastFriendIndex = -1;
 int friends[MAX_CLIENTS];
 
 Message receiveMessage(int queue) {
     Message message;
-    if(msgrcv(queue, &message, MESSAGE_SIZE, 0, 0)) {
+    if(mq_receive(queue, (char *)&message, MESSAGE_SIZE, NULL)) {
         return message;
     } else {
         fprintf(stderr, "Wystąpił problem z odbieraniem wiadomości z kolejki serwera");
@@ -41,7 +42,7 @@ void sendMessageToClient(int queue, long messageType, char* messageText, long cl
         exit(1);
     }
 
-    if (msgsnd(queue, &message, MESSAGE_SIZE, 0) == -1){
+    if(mq_send(queue, (char*) &message, MESSAGE_SIZE, 1) == -1) {
         fprintf(stderr, "Wysyłanie wiadomości do klienta nie powiodło się");
         exit(1);
     }
@@ -53,7 +54,11 @@ void manageInitMessage(Message message) {
         fprintf(stderr, "Przekroczono maksymalną liczbę klientów");
         exit(1);
     }
-    if ((clientsQueues[lastClientIndex] = msgget(message.clientID, 0))) {
+
+    char clientQueuePath[15];
+    sprintf(clientQueuePath, "/%ld", message.clientID);
+
+    if ((clientsQueues[lastClientIndex] = mq_open(clientQueuePath, O_WRONLY))) {
         sendMessageToClient(clientsQueues[lastClientIndex], INIT, "Wiadomośc nawiązania połączenia", lastClientIndex, 0);
     } else {
         fprintf(stderr, "Wystąpił problem z odnalezieniem kolejki klienta");
@@ -231,10 +236,12 @@ void atExit() {
         if (clientsQueues[i] != 0) {
             char* description = "Wiadomość zakończenia działania";
             sendMessageToClient(clientsQueues[i], STOP, description, 0, strlen(description));
+            mq_close(clientsQueues[i]);
             receiveMessage(serverQueue);
         }
     }
-    msgctl(serverQueue, IPC_RMID, NULL);
+    mq_close(serverQueue);
+    mq_unlink(SERVER);
 }
 
 void handleSIGINT(int signum) {
@@ -247,13 +254,15 @@ int main() {
     signal(SIGINT, handleSIGINT);
     Message receivedMessage;
 
-    key_t serverKey = ftok(getenv("HOME"), 'e');
+    struct mq_attr messageAttributes;
+    messageAttributes.mq_maxmsg = MAX_MESSAGES;
+    messageAttributes.mq_msgsize = MESSAGE_SIZE;
 
     for(int i = 0; i<MAX_CLIENTS; i++){
         friends[i] = -1;
     }
 
-    if ((serverQueue = msgget(serverKey, IPC_CREAT | 0666))) {
+    if ((serverQueue = mq_open(SERVER, O_RDONLY | O_CREAT | O_EXCL, 0666, &messageAttributes))) {
         printf("Wystartowano serwer o ID %d\n", serverQueue);
 
         while(1) {

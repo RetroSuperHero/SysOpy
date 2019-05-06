@@ -1,7 +1,7 @@
 GCC=gcc
 SOURCE_SERVER=server
 SOURCE_CLIENT=client
-FLAGS=-Wall
+FLAGS=-Wall -lrt
 
 all: compile
 	./$(SOURCE_SERVER)

@@ -10,16 +10,17 @@
 #include <signal.h>
 #include <string.h>
 #include <time.h>
+#include <mqueue.h>
 #include "chat.h"
 
 pid_t PID;
 int thisClient;
-int serverQueue;
-int thisClientQueue;
+mqd_t serverQueue;
+mqd_t thisClientQueue;
 
 Message receiveMessage(int queue) {
     Message message;
-    if(msgrcv(queue, &message, MESSAGE_SIZE, 0, 0)) {
+    if(mq_receive(queue, (char *)&message, MESSAGE_SIZE, NULL)) {
         return message;
     } else {
         fprintf(stderr, "Wystąpił problem z odbieraniem wiadomości z kolejki serwera");
@@ -42,7 +43,7 @@ void sendMessageToClient(int queue, long messageType, char* messageText, long cl
 
     printf("Wysyłanie wiadomości: \n  Typ: %s \n  Klient: %ld\n  Treść: %s\n", getTypeName(message.type), message.clientID, message.text);
 
-    if (msgsnd(queue, &message, MESSAGE_SIZE, 0) == -1){
+    if(mq_send(queue, (char*) &message, MESSAGE_SIZE, 1) == -1){
         fprintf(stderr, "Wysyłanie wiadomości do klienta nie powiodło się");
         exit(1);
     }
@@ -74,8 +75,15 @@ void manageInputCommand(char* command, size_t commandLength) {
 void atExit() {
     if (PID == 0) {
         char* description = "Wiadomość zakończenia działania";
-        msgctl(thisClientQueue, IPC_RMID, NULL);
+        
+        mq_close(thisClientQueue);
+        char thisQueuePath[15];
+        sprintf(thisQueuePath, "/%d", getpid());
+        mq_unlink(thisQueuePath);
+
         sendMessageToClient(serverQueue, STOP, description, thisClient, strlen(description));
+
+        mq_close(serverQueue);
     }
     exit(1);
 }
@@ -91,21 +99,26 @@ int main() {
     atexit(atExit);
     signal(SIGINT, handleSIGINT);
 
-    key_t serverKey = ftok(getenv("HOME"), 'e');
-    key_t clientKey = ftok(getenv("HOME"), getpid());
+    thisClient = getpid();
+    struct mq_attr messageAttributes;
+    messageAttributes.mq_maxmsg = MAX_MESSAGES;
+    messageAttributes.mq_msgsize = MESSAGE_SIZE;
 
-    if((serverQueue = msgget(serverKey, 0)) == -1) {
+    char thisClientPath[15];
+    sprintf(thisClientPath, "/%d", thisClient);
+
+    if((thisClientQueue = mq_open(thisClientPath, O_RDONLY | O_CREAT | O_EXCL, 0666, &messageAttributes)) == -1) {
         fprintf(stderr, "Wystąpił problem z połączeniem z kolejką serwera");
         exit(1);
     }
 
-    if((thisClientQueue = msgget(clientKey, IPC_CREAT | 0666)) == -1) {
+    if((serverQueue = mq_open(SERVER, O_WRONLY)) == -1) {
         fprintf(stderr, "Wystąpił problem z tworzeniem kolejki dla klienta");
         exit(1);
     }
 
     char* description = "Wiadomość nawiązania połączenia";
-    sendMessageToClient(serverQueue, INIT, description, clientKey, strlen(description));
+    sendMessageToClient(serverQueue, INIT, description, thisClient, strlen(description));
     Message message = receiveMessage(thisClientQueue);
     thisClient = message.clientID;
 
