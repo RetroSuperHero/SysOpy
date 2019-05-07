@@ -35,7 +35,7 @@ void sendMessageToClient(int queue, long messageType, char* messageText, long cl
     message.textLength = textLength;
 
     if(textLength <= MAX_MESSAGE_LENGTH && textLength >= 0) {
-        memcpy(message.text, messageText, textLength);
+        strcpy(message.text, messageText);
     } else {
         fprintf(stderr, "Wysyłana do klienta wiadomość ma nieprawidłową długość");
         exit(1);
@@ -105,7 +105,7 @@ void manageToAllMessage(Message message) {
 
 void manageAddFriendsMessage(Message message) {
     char* friendsString = calloc(message.textLength, sizeof(char));
-    memcpy(friendsString, message.text, message.textLength);
+    strcpy(friendsString, message.text);
     char *friend = strtok(friendsString, " ");
 
     while(friend != NULL) {
@@ -147,7 +147,7 @@ void manageFriendsMessage(Message message) {
 
 void manageDelFriendsMessage(Message message) {
     char* friendsString = calloc(message.textLength, sizeof(char));
-    memcpy(friendsString, message.text, message.textLength);
+    strcpy(friendsString, message.text);
     char *friend = strtok(friendsString, " ");
 
     while(friend != NULL) {

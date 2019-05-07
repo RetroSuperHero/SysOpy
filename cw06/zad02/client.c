@@ -35,7 +35,7 @@ void sendMessageToClient(int queue, long messageType, char* messageText, long cl
     message.textLength = textLength;
 
     if(textLength <= MAX_MESSAGE_LENGTH && textLength >= 0) {
-        memcpy(message.text, messageText, textLength);
+        strcpy(message.text, messageText);
     } else {
         fprintf(stderr, "Wysyłana do klienta wiadomość ma nieprawidłową długość");
         exit(1);
