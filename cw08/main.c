@@ -106,7 +106,8 @@ void filter(int i, int j) {
 }
 
 void* blockMode(void* id) {
-    int thisId = *((int *) id);
+    long int start = getMicrotime();
+    int thisId = *((int *) id) + 1;
     int height = outFileMatrix.height;
     int sector = (int) ceil(1.0*height/threadsNo);
     
@@ -115,6 +116,23 @@ void* blockMode(void* id) {
             filter(i, j);
         }
     }
+    printf(" Czas wątku %d: %ld\n", thisId, getMicrotime() - start);
+
+    pthread_exit(0);
+}
+
+void* interleavedMode(void* id) {
+    long int start = getMicrotime();
+    int thisId = *((int *) id) + 1;
+    int height = outFileMatrix.height;
+    
+    for(int i=thisId-1;i<outFileMatrix.height - filterMatrix.height/2; i+=threadsNo) {
+        for(int j=0; j<inFileMatrix.width; ++j) {
+            filter(i, j);
+        }
+    }
+    printf(" Czas wątku %d: %ld\n", thisId, getMicrotime() - start);
+
     pthread_exit(0);
 }
 
@@ -150,6 +168,7 @@ int main(int argc, char** argv) {
     threadsNo = stringToInt(argv[1]);
     pthread_t threads[threadsNo];
     char* mode = argv[2];
+    printf("%d wątków %s\n", threadsNo, mode);
 
     getMatrix(&inFileMatrix, inFile);
     getMatrix(&filterMatrix, filterFile);
@@ -160,11 +179,11 @@ int main(int argc, char** argv) {
         pthread_attr_t attr;
         pthread_attr_init(&attr);
         int *arg = malloc(sizeof(*arg));
-        *arg = i+1;
+        *arg = i;
         if(!strcmp(mode, "block")) {
             pthread_create(&thread, &attr, &blockMode, arg);
         } else if(!strcmp(mode, "interleaved")) {
-            pthread_create(&thread, &attr, &blockMode, arg);
+            pthread_create(&thread, &attr, &interleavedMode, arg);
         } else {
             fprintf(stderr, "Podano zły tryb\n");
             exit(0);
@@ -178,7 +197,7 @@ int main(int argc, char** argv) {
 
     createOutImage(outFile);
 
-    printf("%ld\n", getMicrotime() - start);
+    printf(" Całkowity czas: %ld\n", getMicrotime() - start);
 
     return 0;
 }
